@@ -1,0 +1,19 @@
+# Generate Microservice Script
+
+This script dynamically creates a NestJS microservice with the following features:
+- Schema, DTO, Controller, and Service files.
+- MongoDB integration via `@nestjs/mongoose`.
+- Centralized API response structure.
+- Works cross-platform on **Windows**, **Mac**, or **Linux**.
+
+---
+
+## Prerequisites
+
+1. **Install Node.js**:
+   - [Download and Install Node.js](https://nodejs.org/) for your platform.
+   - Ensure `node` and `npm`/`yarn` are available in your terminal.
+
+2. **Install NestJS CLI**:
+   ```bash
+   npm install -g @nestjs/cli
