@@ -10,7 +10,7 @@ interface MapProps {
   markers?: Array<{
     id: string
     position: google.maps.LatLngLiteral
-    title?: string
+    title?: string 
   }>
   height?: string
   width?: string
