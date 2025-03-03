@@ -1,6 +1,4 @@
-import GeozoneForm from "./component/GeozoneForm";
-import GoogleMapComponent from "./component/google-map";
-import Geozone from "./Geozone/Geozone";
+ import Geozone from "./Geozone/Geozone";
 
 const App = () => {
   return (

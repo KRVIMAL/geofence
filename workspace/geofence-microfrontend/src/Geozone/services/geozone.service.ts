@@ -30,16 +30,8 @@ export const fetchGeozoneHandler = async (params: any) => {
   try {
     const { page = 1, limit = 10 } = params.input
     const response = await axios.get(`${BASE_URL}/geofences?page=${page}&limit=${limit}`)
-    return {
-      listGeozone: {
-        data: response.data,
-        paginatorInfo: {
-          count: response.data.length,
-          currentPage: page,
-          perPage: limit,
-        },
-      },
-    }
+   return response.data
+    
   } catch (error: any) {
     throw error.message
   }

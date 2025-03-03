@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useEffect, useState } from "react"
 import { getAddressDetailsByPincode } from "../services/geozone.service"
@@ -18,22 +16,11 @@ interface CreateGeoZoneModalProps {
   setFormField: (formField: any) => void
   formField: FormFields
   addGeozoneHandler: () => void
-  locationType: any[]
+  client: any[]
   edit: boolean
 }
 
-const fieldNames: { [key: string]: string } = {
-  locationType: "Location Type",
-  name: "Name",
-  mobileNumber: "Mobile Number",
-  zipCode: "Zip Code",
-  country: "Country",
-  state: "State",
-  area: "Area",
-  city: "City",
-  district: "District",
-  address: "Address",
-}
+
 
 const CreateGeoZoneModal: React.FC<CreateGeoZoneModalProps> = ({
   isOpenModal,
@@ -41,7 +28,7 @@ const CreateGeoZoneModal: React.FC<CreateGeoZoneModalProps> = ({
   setFormField,
   formField,
   addGeozoneHandler,
-  locationType,
+  client,
   edit,
 }) => {
   const [zipCodeData, setZipCodeData] = useState<any[]>([])
@@ -126,25 +113,25 @@ const CreateGeoZoneModal: React.FC<CreateGeoZoneModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="col-span-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Location Type <span className="text-red-500">*</span>
+                Client <span className="text-red-500">*</span>
               </label>
               <select
-                name="locationType"
-                value={formField.locationType?.value || ""}
+                name="client"
+                value={formField.client?.value || ""}
                 onChange={handleOnChange}
                 className={`w-full p-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white ${
-                  formField.locationType?.error ? "border-red-500" : "border-gray-300 dark:border-gray-600"
+                  formField.client?.error ? "border-red-500" : "border-gray-300 dark:border-gray-600"
                 }`}
               >
-                <option value="">Select Location Type</option>
-                {locationType.map((item: any, index: number) => (
+                <option value="">Select Client</option>
+                {client.map((item: any, index: number) => (
                   <option key={index} value={item.type}>
                     {item.type}
                   </option>
                 ))}
               </select>
-              {formField.locationType?.error && (
-                <p className="text-red-500 text-xs mt-1">{formField.locationType.error}</p>
+              {formField.client?.error && (
+                <p className="text-red-500 text-xs mt-1">{formField.client.error}</p>
               )}
             </div>
 

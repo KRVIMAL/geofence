@@ -8,8 +8,8 @@ export const geoZoneInsertField = (data?: any) => {
         value: data?.geoCodeData?.geometry?.type ?? "",
         error: "",
       },
-      locationType: {
-        value: data?.locationType ?? "",
+      client: {
+        value: data?.client ?? "",
         error: "",
       },
       mobileNumber: {
