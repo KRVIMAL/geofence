@@ -70,8 +70,8 @@ const Geozone = () => {
   const [isOpen, setOpenModal] = useState<boolean>(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState<number>(0);
   const [geozoneData, setGeozoneData] = useState<GeoZone[]>([]);
-  console.log({ geozoneData });
   const [loading, setLoading] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
   const [client, setLocationType] = useState<any[]>([
@@ -92,7 +92,6 @@ const Geozone = () => {
   const autocompleteRef = useRef<HTMLInputElement>(null);
   const autocompleteInstance = useRef<any>(null);
   const [google, setGoogle] = useState<any>(null);
-
   // Add this at the beginning of the component, before any useEffects
   useEffect(() => {
     const loadGoogleMaps = async () => {
@@ -196,7 +195,7 @@ const Geozone = () => {
               mapInstance.setZoom(15);
 
               // Create a marker for the selected place
-              const marker = new google.maps.Marker({
+              const marker = new google.maps.marker.AdvancedMarkerElement({
                 position: place.geometry.location,
                 map: mapInstance,
                 title: place.name,
@@ -215,7 +214,7 @@ const Geozone = () => {
           google.maps.event.addListener(
             drawingManagerInstance,
             "overlaycomplete",
-            (event) => {
+            (event: any) => {
               // Switch off drawing mode
               drawingManagerInstance.setDrawingMode(null);
               setActiveDrawingTool(null);
@@ -247,7 +246,7 @@ const Geozone = () => {
   // Fetch geozones on component mount
   useEffect(() => {
     fetchGeozone();
-  }, []);
+  }, [page, limit]);
 
   // Display geozones on map when data changes
   useEffect(() => {
@@ -425,7 +424,7 @@ const Geozone = () => {
 
         switch (type) {
           case "Point":
-            shape = new google.maps.Marker({
+            shape = new google.maps.marker.AdvancedMarkerElement({
               position: { lat: coordinates[0], lng: coordinates[1] },
               map,
               title: geozone.name,
@@ -502,6 +501,7 @@ const Geozone = () => {
   const fetchGeozone = async () => {
     try {
       setLoading(true);
+      // CHANGED: pass page and limit
       const res = await fetchGeozoneHandler({
         input: {
           page,
@@ -509,6 +509,7 @@ const Geozone = () => {
         },
       });
       setGeozoneData(res?.data?.data);
+      setTotal(res?.data?.total || 0); // CHANGED: store total
       setLoading(false);
     } catch (error: any) {
       console.error("Error fetching geozones:", error);
@@ -551,11 +552,17 @@ const Geozone = () => {
 
       if (selectedShape) {
         if (shapeType === "Point") {
+          console.log("point")
+          console.log({lat:formField.lat.value})
+          console.log({lng:formField.long.value})
           coordinates = [
             Number.parseFloat(formField.lat.value),
             Number.parseFloat(formField.long.value),
           ];
         } else if (shapeType === "Circle") {
+          console.log("circle")
+          console.log({lat:formField.lat.value})
+          console.log({lng:formField.long.value})
           coordinates = [
             Number.parseFloat(formField.lat.value),
             Number.parseFloat(formField.long.value),
@@ -719,7 +726,7 @@ const Geozone = () => {
   // Add this function to handle place selection
   const handlePlaceSelection = (
     place: google.maps.places.PlaceResult,
-    marker: google.maps.Marker
+    marker: google.maps.marker.AdvancedMarkerElement
   ) => {
     const lat = place.geometry?.location?.lat();
     const lng = place.geometry?.location?.lng();
@@ -884,6 +891,91 @@ const Geozone = () => {
                   ))}
                 </ul>
               )}
+              {/* Replace the existing pagination block with this snippet */}
+              <div className="flex justify-between items-center mt-4">
+                {/* Limit Selection (unchanged) */}
+                <div className="flex items-center">
+                  <label
+                    htmlFor="limit"
+                    className="mr-2 text-sm text-gray-700 dark:text-gray-300"
+                  >
+                    Limit:
+                  </label>
+                  <select
+                    id="limit"
+                    value={limit}
+                    onChange={(e) => {
+                      setLimit(Number(e.target.value));
+                      setPage(1);
+                    }}
+                    className="p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-white"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={15}>15</option>
+                    <option value={20}>20</option>
+                  </select>
+                </div>
+
+                {/* Page Navigation with numbered buttons + first/last */}
+                <div className="flex items-center space-x-1">
+                  {/* First Page */}
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage(1)}
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                  >
+                    First
+                  </button>
+
+                  {/* Previous Page */}
+                  <button
+                    disabled={page === 1}
+                    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                  >
+                    <ChevronLeftIcon className="h-4 w-4" />
+                  </button>
+
+                  {/* Numbered Page Buttons */}
+                  {Array.from(
+                    { length: Math.ceil(total / limit) },
+                    (_, index) => index + 1
+                  ).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md 
+            ${
+              page === pageNum
+                ? "bg-indigo-600 text-white"
+                : "bg-white dark:bg-gray-700 dark:text-white"
+            }
+          `}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+
+                  {/* Next Page */}
+                  <button
+                    disabled={page === Math.ceil(total / limit)}
+                    onClick={() => setPage((prev) => prev + 1)}
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                  >
+                    <ChevronRightIcon className="h-4 w-4" />
+                  </button>
+
+                  {/* Last Page */}
+                  <button
+                    disabled={page === Math.ceil(total / limit)}
+                    onClick={() => setPage(Math.ceil(total / limit))}
+                    className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 dark:text-white disabled:opacity-50"
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
