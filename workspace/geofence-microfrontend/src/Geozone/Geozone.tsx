@@ -74,7 +74,7 @@ const Geozone = () => {
   const [geozoneData, setGeozoneData] = useState<GeoZone[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>("");
-  const [client, setLocationType] = useState<any[]>([
+  const [client, setClient] = useState<any[]>([
     { type: "A" },
     { type: "B" },
     { type: "C" },
@@ -92,7 +92,7 @@ const Geozone = () => {
   const autocompleteRef = useRef<HTMLInputElement>(null);
   const autocompleteInstance = useRef<any>(null);
   const [google, setGoogle] = useState<any>(null);
-  // Add this at the beginning of the component, before any useEffects
+
   useEffect(() => {
     const loadGoogleMaps = async () => {
       const loader = new Loader({
@@ -116,13 +116,12 @@ const Geozone = () => {
   // Initialize Google Maps
   useEffect(() => {
     const initMap = async () => {
-      if (!google) return; // Ensure Google Maps API is loaded
-
-      if (mapRef.current) {
+      if (!google) return; 
+      if (mapRef?.current) {
         const mapInstance = new google.maps.Map(mapRef.current, {
           center: { lat: 28.7041, lng: 77.1025 }, // Default to Delhi, India
           zoom: 12,
-          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          mapTypeId: google.maps?.MapTypeId?.ROADMAP,
           mapTypeControl: true,
           streetViewControl: true,
           fullscreenControl: true,
@@ -135,13 +134,13 @@ const Geozone = () => {
           drawingMode: null,
           drawingControl: true,
           drawingControlOptions: {
-            position: google.maps.ControlPosition.TOP_CENTER,
+            position: google.maps.ControlPosition?.TOP_CENTER,
             drawingModes: [
-              google.maps.drawing.OverlayType.MARKER,
-              google.maps.drawing.OverlayType.CIRCLE,
-              google.maps.drawing.OverlayType.POLYGON,
-              google.maps.drawing.OverlayType.POLYLINE,
-              google.maps.drawing.OverlayType.RECTANGLE,
+              google?.maps?.drawing?.OverlayType?.MARKER,
+              google?.maps?.drawing?.OverlayType?.CIRCLE,
+              google?.maps?.drawing?.OverlayType?.POLYGON,
+              google?.maps?.drawing?.OverlayType?.POLYLINE,
+              google?.maps?.drawing?.OverlayType?.RECTANGLE,
             ],
           },
           markerOptions: { draggable: true },
@@ -175,32 +174,32 @@ const Geozone = () => {
           },
         });
 
-        drawingManagerInstance.setMap(mapInstance);
+        drawingManagerInstance?.setMap(mapInstance);
         setDrawingManager(drawingManagerInstance);
 
         // Setup autocomplete for location search
         if (autocompleteRef.current) {
           const autocomplete = new google.maps.places.Autocomplete(
-            autocompleteRef.current,
+            autocompleteRef?.current,
             {
               types: ["geocode"],
               componentRestrictions: { country: "in" },
             }
           );
 
-          autocomplete.addListener("place_changed", () => {
-            const place = autocomplete.getPlace();
-            if (place.geometry && place.geometry.location) {
-              mapInstance.setCenter(place.geometry.location);
-              mapInstance.setZoom(15);
+          autocomplete?.addListener("place_changed", () => {
+            const place = autocomplete?.getPlace();
+            if (place?.geometry && place?.geometry?.location) {
+              mapInstance?.setCenter(place?.geometry?.location);
+              mapInstance?.setZoom(15);
 
               // Create a marker for the selected place
-              const marker = new google.maps.marker.AdvancedMarkerElement({
-                position: place.geometry.location,
+              const marker = new google.maps.marker({
+                position: place?.geometry?.location,
                 map: mapInstance,
-                title: place.name,
+                title: place?.name,
               });
-
+              console.log({marker})
               // Open the create geozone modal with the selected place data
               handlePlaceSelection(place, marker);
             }
@@ -250,7 +249,7 @@ const Geozone = () => {
 
   // Display geozones on map when data changes
   useEffect(() => {
-    if (map && geozoneData.length > 0) {
+    if (map && geozoneData?.length > 0) {
       console.log("map");
       displayGeozonesOnMap();
     }
@@ -273,55 +272,70 @@ const Geozone = () => {
   // Handle shape creation and open modal with shape data
   const handleShapeCreated = (shape: any, type: string) => {
     if (!google) return;
-
+    console.log({ shape: shape, type: type });
+  
     let coordinates: number[] = [];
     let radius = 0;
     let shapeType = "";
-
+  
     if (type === google.maps.drawing.OverlayType.MARKER) {
+      console.log({ types: type });
       const position = shape.getPosition();
-      coordinates = [position?.lat(), position?.lng()];
+      if (!position) return;
+  
+      console.log({ position });
+      console.log(position.lat(), "lat");
+      
+      coordinates = [position.lat(), position.lng()];
       shapeType = "Point";
       radius = 0;
     } else if (type === google.maps.drawing.OverlayType.CIRCLE) {
+      console.log({ cicletype: type });
       const center = shape.getCenter();
+      if (!center) return;
+  
+      console.log({ center });
       coordinates = [center.lat(), center.lng()];
       radius = shape.getRadius();
       shapeType = "Circle";
     } else if (type === google.maps.drawing.OverlayType.POLYGON) {
       const path = shape.getPath();
-      coordinates = path
-        .getArray()
-        .map((latLng: any) => [latLng.lat(), latLng.lng()]);
+      coordinates = path.getArray().map((latLng: any) => [latLng.lat(), latLng.lng()]);
       shapeType = "Polygon";
       radius = 0;
     } else if (type === google.maps.drawing.OverlayType.POLYLINE) {
       const path = shape.getPath();
-      coordinates = path
-        .getArray()
-        .map((latLng: any) => [latLng.lat(), latLng.lng()]);
+      coordinates = path.getArray().map((latLng: any) => [latLng.lat(), latLng.lng()]);
       shapeType = "Polyline";
       radius = 0;
     } else if (type === google.maps.drawing.OverlayType.RECTANGLE) {
       const bounds = shape?.getBounds();
-      const ne: any = bounds?.getNorthEast();
-      const sw: any = bounds?.getSouthWest();
+      if (!bounds) return;
+  
+      const ne: any = bounds.getNorthEast();
+      const sw: any = bounds.getSouthWest();
       coordinates = [
-        [ne?.lat(), ne?.lng()],
+        [ne.lat(), ne.lng()],
         [sw.lat(), sw.lng()],
       ];
       shapeType = "Rectangle";
       radius = 0;
     }
-
-    setFormField({
-      ...formField,
-      type: { value: shapeType, error: "" },
-      lat: { value: coordinates[0].toString(), error: "" },
-      long: { value: coordinates[1].toString(), error: "" },
-      radius: { value: radius.toString(), error: "" },
-    });
-
+  
+    if (coordinates.length > 0) {
+      console.log(coordinates[0], "latitude");
+      console.log(coordinates[1], "longitude");
+  
+      // Ensure the coordinates update the formField state
+      setFormField((prevState) => ({
+        ...prevState,
+        type: { value: shapeType, error: "" },
+        lat: { value: coordinates[0].toString(), error: "" },
+        long: { value: coordinates[1]?.toString() || "", error: "" },
+        radius: { value: radius.toString(), error: "" },
+      }));
+    }
+  
     // Reverse geocode to get address
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode(
@@ -335,10 +349,10 @@ const Geozone = () => {
           let city = "";
           let district = "";
           let area = "";
-
+  
           for (const component of addressComponents) {
             const types = component.types;
-            if (types.includes("postal_code")) {
+            if (types.includes("al_code")) {
               zipCode = component.long_name;
             } else if (types.includes("country")) {
               country = component.long_name;
@@ -352,11 +366,11 @@ const Geozone = () => {
               area = component.long_name;
             }
           }
-
+  
           const address = results[0].formatted_address;
-
-          setFormField({
-            ...formField,
+          console.log({formFieldreverse:formField})
+          setFormField((prevState) => ({
+            ...prevState,
             zipCode: { value: zipCode, error: "" },
             country: { value: country, error: "" },
             state: { value: state, error: "" },
@@ -364,26 +378,28 @@ const Geozone = () => {
             district: { value: district, error: "" },
             area: { value: area, error: "" },
             address: { value: address, error: "" },
-          });
-
+          }));
+  
           // If we have a zip code, fetch additional details
-          if (zipCode) {
-            fetchZipCodeDetails(zipCode);
-          }
+          // if (zipCode) {
+          //   fetchZipCodeDetails(zipCode);
+          // }
         }
       }
     );
-
+  
     setSelectedShape(shape);
     setOpenModal(true);
   };
-
+  
+  console.log({ formField });
   // Fetch zip code details
   const fetchZipCodeDetails = async (zipCode: string) => {
     try {
       const data = await getAddressDetailsByPincode(zipCode);
       if (data && data.length > 0) {
         const item = data[0];
+        console.log({formFieldsss:formField})
         setFormField({
           ...formField,
           country: { ...formField.country, value: item.Country, error: "" },
@@ -408,8 +424,8 @@ const Geozone = () => {
     if (!map || !google) return;
 
     // Clear existing shapes
-    shapes.forEach((shape: any) => {
-      shape.setMap(null);
+    shapes?.forEach((shape: any) => {
+      shape?.setMap(null);
     });
     setShapes([]);
 
@@ -423,13 +439,14 @@ const Geozone = () => {
         let shape: any;
 
         switch (type) {
-          case "Point":
-            shape = new google.maps.marker.AdvancedMarkerElement({
-              position: { lat: coordinates[0], lng: coordinates[1] },
-              map,
-              title: geozone.name,
-            });
-            break;
+          // case "Point":
+          //   shape = new google.maps.marker({
+          //     position: { lat: coordinates[0], lng: coordinates[1] },
+          //     map,
+          //     title: geozone?.name,
+          //   });
+          //   console.log({shape},"shapeshape")
+          //   break;
           case "Circle":
             shape = new google.maps.Circle({
               center: { lat: coordinates[0], lng: coordinates[1] },
@@ -443,7 +460,7 @@ const Geozone = () => {
             break;
           case "Polygon":
             shape = new google.maps.Polygon({
-              paths: coordinates.map((coord: number[]) => ({
+              paths: coordinates?.map((coord: number[]) => ({
                 lat: coord[0],
                 lng: coord[1],
               })),
@@ -456,7 +473,7 @@ const Geozone = () => {
             break;
           case "Polyline":
             shape = new google.maps.Polyline({
-              path: coordinates.map((coord: number[]) => ({
+              path: coordinates?.map((coord: number[]) => ({
                 lat: coord[0],
                 lng: coord[1],
               })),
@@ -472,18 +489,18 @@ const Geozone = () => {
           const infoWindow = new google.maps.InfoWindow({
             content: `
               <div>
-                <h3>${geozone.name}</h3>
-                <p>${geozone.finalAddress}</p>
+                <h3>${geozone?.name}</h3>
+                <p>${geozone?.finalAddress}</p>
                 ${type === "Circle" ? `<p>Radius: ${radius} meters</p>` : ""}
               </div>
             `,
           });
 
-          shape.addListener("click", (e: any) => {
-            infoWindow.setPosition(
-              type === "Point" ? shape.getPosition() : e.latLng
+          shape?.addListener("click", (e: any) => {
+            infoWindow?.setPosition(
+              type === "Point" ? shape?.getPosition() : e?.latLng
             );
-            infoWindow.open(map);
+            infoWindow?.open(map);
           });
 
           shape.geozoneData = geozone;
@@ -491,7 +508,7 @@ const Geozone = () => {
 
         return shape;
       })
-      .filter(Boolean);
+      ?.filter(Boolean);
 
     setShapes(newShapes);
   };
@@ -552,17 +569,17 @@ const Geozone = () => {
 
       if (selectedShape) {
         if (shapeType === "Point") {
-          console.log("point")
-          console.log({lat:formField.lat.value})
-          console.log({lng:formField.long.value})
+          console.log("point");
+          console.log({ lat: formField.lat.value });
+          console.log({ lng: formField.long.value });
           coordinates = [
             Number.parseFloat(formField.lat.value),
             Number.parseFloat(formField.long.value),
           ];
         } else if (shapeType === "Circle") {
-          console.log("circle")
-          console.log({lat:formField.lat.value})
-          console.log({lng:formField.long.value})
+          console.log("circle");
+          console.log({ lat: formField.lat.value });
+          console.log({ lng: formField.long.value });
           coordinates = [
             Number.parseFloat(formField.lat.value),
             Number.parseFloat(formField.long.value),
